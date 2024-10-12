@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>网址收藏夹</title>
+    <style type="text/css">
+        body {
+            background-image: url('/static/img/yunlongtu.jpg');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            font-family: Arial, sans-serif;
+            color: #fff;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 100px;
+            font-size: 36px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px #000;
+        }
+
+        ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        li {
+            margin: 10px;
+            flex-basis: 22%;
+        }
+
+        a {
+            display: block;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.5);
+            border-radius: 5px;
+            color: #000;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px #fff;
+            transition: all 0.3s ease;
+        }
+
+        a:hover {
+            transform: scale(1.1);
+            background-color: rgba(255, 255, 255, 0.8);
+            box-shadow: 2px 2px 4px #000;
+        }
+
+        form {
+            margin-top: 50px;
+        }
+
+        label {
+            display: inline-block;
+            width: 120px;
+            text-align: right;
+            margin-right: 10px;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        input[type="submit"] {
+            font-size: 16px;
+            padding: 5px;
+            border-radius: 5px;
+            border: none;
+            margin-bottom: 10px;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .delete {
+            color: transparent;
+            cursor: pointer;
+        }
+        .delete:hover {
+            color: gray;
+            cursor: pointer;
+        }
+        .logo {
+            width: 35px;
+            height: 35px;
+        }
+    </style>
+</head>
+<body>
+<!--    <img class="logo" src="/static/img/webfav.png">-->
+    <h1>网址收藏夹<img class="logo" src="/static/img/webfav.png"></h1>
+    <h2>添加新网址</h2>
+    <form id="addForm">
+        <label for="name">name：</label>
+        <input type="text" id="name" name="name"><br><br>
+        <label for="url">url：</label>
+        <input type="url" id="url" name="url"><br><br>
+        <input type="submit" value="添加">
+    </form>
+
+    <ul id="bookmarkList">
+        {% for row in rows %}
+        <li>
+            <a href="{{ row['url'] }}" target="_blank">{{ row['name'] }}</a>
+            <span class="delete" data-id="{{ row['id'] }}">删除</span>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <script type="text/javascript">
+        document.getElementById('addForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var name = document.getElementById('name').value;
+            var url = document.getElementById('url').value;
+
+            fetch('/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'name=' + encodeURIComponent(name) + '&url=' + encodeURIComponent(url)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                }
+            });
+        });
+
+        var deleteButtons = document.querySelectorAll('.delete');
+        deleteButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                var id = this.getAttribute('data-id');
+                if (confirm('确定要删除此网址吗？')) {
+                    fetch('/delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: 'id=' + encodeURIComponent(id)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
